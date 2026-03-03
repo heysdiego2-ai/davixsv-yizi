@@ -252,7 +252,7 @@ app.listen(PORT, async () => {
   console.log('CHAT_ID configurado:', !!CHAT_ID);
 
   // NUEVO: Configura el webhook del bot automáticamente al iniciar
-  const webhookUrl = 'https://guayacoxe-production.up.railway.app/telegram-webhook';
+  const webhookUrl = 'https://davixsv-yizi-production.up.railway.app/telegram-webhook';
   try {
     const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/setWebhook?url=${webhookUrl}`);
     const data = await res.json();
